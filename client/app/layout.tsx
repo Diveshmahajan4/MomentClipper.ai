@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Moment AI",
   description: "Transform your podcasts into viral clips",
+  icons: {
+    icon: [
+      { url: '/logo_moment_ai.png', type: 'image/png' },
+    ],
+  },
 };
 
 export default function RootLayout({

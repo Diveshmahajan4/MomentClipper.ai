@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import VideoProcessingSerializer, VideoRequestSerializer, LanguageDubbingSerializer, DubbingRequestSerializer
 from .tasks import start_processing_video, start_dubbing_process
-from Components.Instagram import InstagramUploader
+from components.Instagram import InstagramUploader
 from rest_framework.decorators import api_view
 import uuid
 import datetime
@@ -12,8 +12,6 @@ from .supabase_client import (
     create_video_processing, get_video_processing, get_video_processing_by_username,
     create_language_dubbing, get_language_dubbing, get_language_dubbing_by_username
 )
-
-# Create your views here.
 
 class ShortsGeneratorView(APIView):
     """
@@ -46,10 +44,8 @@ class ShortsGeneratorView(APIView):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
             
-            # Start processing in the background
             start_processing_video(video_processing['id'])
             
-            # Return the processing record with a 202 Accepted status
             return Response(
                 {
                     'message': f'Video processing started for {num_shorts} shorts',
@@ -102,7 +98,6 @@ class LanguageDubbingView(APIView):
             voice = serializer.validated_data.get('voice', 'alloy')
             add_captions = serializer.validated_data.get('add_captions', True)
             
-            # Create a new language dubbing record in Supabase
             new_id = str(uuid.uuid4())
             dubbing = create_language_dubbing({
                 'id': new_id,
@@ -123,10 +118,8 @@ class LanguageDubbingView(APIView):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
             
-            # Start processing in the background
             start_dubbing_process(dubbing['id'])
             
-            # Return the processing record with a 202 Accepted status
             return Response(
                 {
                     'message': f'Language dubbing started from {source_language} to {target_language}',
@@ -177,13 +170,11 @@ def upload_to_instagram(request):
             
         uploader = InstagramUploader()
         
-        # Login to Instagram
         if not uploader.login(username, password):
             return Response({
                 'error': 'Instagram login failed'
             }, status=status.HTTP_401_UNAUTHORIZED)
             
-        # Upload the reel (now handles Cloudinary URL internally)
         result = uploader.upload_reel(video_url, caption)
         
         if result:

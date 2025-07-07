@@ -4,9 +4,9 @@ import tempfile
 import time
 import os
 import sys
-import Components.segment_parser as segment_parser
-import Components.transcriber as transcriber
-from Components.text_drawer import (
+import components.segment_parser as segment_parser
+import components.transcriber as transcriber
+from components.text_drawer import (
     get_text_size_ex,
     create_text_ex,
     blur_text_clip,

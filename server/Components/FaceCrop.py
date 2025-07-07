@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from moviepy.editor import *
-from Components.Speaker import detect_faces_and_speakers, Frames
+from components.Speaker import detect_faces_and_speakers, Frames
 global Fps
 
 def crop_to_vertical(input_video_path, output_video_path):

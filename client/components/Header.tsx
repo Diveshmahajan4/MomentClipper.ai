@@ -17,6 +17,7 @@ import { createClient } from "@/utils/supabase/client"
 import { signout } from "@/lib/auth-action"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 interface User {
   name: string
@@ -93,7 +94,7 @@ export default function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center justify-center gap-2">
-            <Wand2 className="h-6 w-6 text-primary" />
+            <Image src="/logo_moment_ai.png" alt="Moment AI" width={32} height={32} />
             <Link href="/" className="text-2xl font-bold text-primary">
               Moment AI
             </Link>

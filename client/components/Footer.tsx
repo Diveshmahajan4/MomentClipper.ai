@@ -48,7 +48,7 @@ export default function Footer() {
       </section>
       <div className="container py-16">
         <div className="mt-16 border-t pt-8 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} BlockShield Hub. All rights reserved.
+          © {new Date().getFullYear()} Moment AI Hub. All rights reserved.
         </div>
       </div>
     </footer>
