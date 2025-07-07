@@ -9,7 +9,7 @@ export default function Hero() {
     router.push("/dashboard")
   }
   return (
-    <div className="bg-background py-20 md:py-32 overflow-hidden relative">
+    <div className="min-h-[80vh] bg-background py-20 md:py-32 overflow-hidden relative">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
