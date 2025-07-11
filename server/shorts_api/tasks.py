@@ -13,7 +13,7 @@ from .utils import upload_to_cloudinary, update_supabase
 from components.YoutubeDownloader import download_youtube_video
 from components.Edit import extractAudio, crop_video, extractAudioDubbed
 from components.Transcription import transcribeAudio
-from components.LanguageTasks import GetHighlight
+from components.LanguageTasks import GetHighlight, getMultipleHighlights
 from components.FaceCrop import crop_to_vertical, combine_videos
 from components.GenerateCaptions import add_captions
 from components.Translation import translate_transcript_with_timestamps
@@ -63,8 +63,7 @@ def process_video_task(video_processing_id):
                 'status': 'FAILED'
             })
             return
-            
-        # Transcribe audio
+
         transcriptions = transcribeAudio(audio)
         if len(transcriptions) == 0:
             update_video_processing(video_processing_id, {
@@ -76,43 +75,43 @@ def process_video_task(video_processing_id):
         trans_text = ""
         for text, start, end in transcriptions:
             trans_text += (f"{start} - {end}: {text}")
-        
-        # Generate multiple highlights
-        for i in range(video_processing.get('num_shorts', 1)):
+
+        json_string = getMultipleHighlights(trans_text, video_processing.get('num_shorts', 1))
+
+        highlights_data = json.loads(json_string)
+
+        for i, highlight in enumerate(highlights_data):
             print(f"Generating short {i+1}/{video_processing.get('num_shorts', 1)}")
+            print("Num_shorts: ", video_processing.get('num_shorts', 1))
             
-            # Get highlight timestamps - we add a different prompt for each short to get variety
-            start, stop = GetHighlight(trans_text + f" (Generate highlight {i+1}, different from previous ones)")
+            start = highlight.get('start')
+            stop = highlight.get('end')
+            print("Start: ", start)
+            print("Stop: ", stop)
+            
             if start == 0 or stop == 0:
-                # Skip this highlight but continue with others
                 print(f"Error in getting highlight {i+1}, skipping")
                 continue
                 
-            # Create output paths
             output = f"media/Out_{i}.mp4"
             
-            # Crop video to highlight section
             crop_video(vid, output, start, stop)
             
-            # Crop to vertical
             cropped = f"media/cropped_{i}.mp4"
             crop_to_vertical(output, cropped)
             
-            # Combine videos
             final_path = f"media/final_{video_processing_id}_{i}.mp4"
             combine_videos(output, cropped, final_path)
             
-            # Add captions to the video if enabled
             if video_processing.get('add_captions', True):
                 try:
                     captioned_path = f"media/captioned/final_{video_processing_id}_{i}_captioned.mp4"
                     
-                    # Generate captions using the local Whisper model for better accuracy
                     add_captions(
                         final_path,
                         captioned_path,
                         font="PoetsenOne-Regular.ttf",
-                        font_size=100,
+                        font_size=80,
                         font_color="white",
                         stroke_width=2,
                         stroke_color="black",
@@ -126,7 +125,6 @@ def process_video_task(video_processing_id):
                         print_info=True
                     )
                     
-                    # Use the captioned video if it was created successfully
                     if os.path.exists(captioned_path):
                         final_path = captioned_path
                         print(f"Successfully added captions to short {i+1}")
@@ -137,23 +135,19 @@ def process_video_task(video_processing_id):
             else:
                 print(f"Captions disabled for this processing task, skipping caption generation")
             
-            # Upload to Cloudinary
             upload_result = upload_to_cloudinary(final_path, f"user_{video_processing.get('username', 'anonymous')}_{i}")
             if upload_result:
-                # Add this URL to the list
                 add_cloudinary_url_to_video_processing(video_processing_id, upload_result['url'], upload_result['public_id'])
                 print(f"Uploaded short {i+1}/{video_processing.get('num_shorts', 1)} to Cloudinary: {upload_result['url']}")
             else:
                 print(f"Failed to upload short {i+1} to Cloudinary, continuing with others")
         
-        # Check if we have any successful uploads
         video_processing = get_video_processing(video_processing_id)
         if video_processing.get('cloudinary_urls_json'):
             update_video_processing(video_processing_id, {
                 'status': 'COMPLETED'
             })
             
-            # Update Supabase with all URLs
             cloudinary_urls = json.loads(video_processing.get('cloudinary_urls_json'))
             urls = [item['url'] for item in cloudinary_urls]
             update_supabase(
@@ -221,7 +215,6 @@ def process_dubbing_task(dubbing_id):
     7. Add captions (optional)
     8. Upload to Cloudinary
     """
-    # Get dubbing data from Supabase
     dubbing = get_language_dubbing(dubbing_id)
     
     if not dubbing:
@@ -229,19 +222,14 @@ def process_dubbing_task(dubbing_id):
         return
     
     try:
-        # Update status to PROCESSING
         update_language_dubbing(dubbing_id, {
             'status': 'PROCESSING'
         })
-        
-        # Ensure directories exist
         ensure_directories()
         
-        # Create directories for dubbed content if they don't exist
         if not os.path.exists('media/dubbed'):
             os.makedirs('media/dubbed')
         
-        # Check if the URL is from Cloudinary or YouTube
         if is_cloudinary_url(dubbing.get('video_url')):
             print(f"Detected Cloudinary URL: {dubbing.get('video_url')}")
             vid_output_path = f"videos/cloudinary_video_{dubbing_id}.mp4"
@@ -254,7 +242,6 @@ def process_dubbing_task(dubbing_id):
                 return
         else:
             print(f"Detected YouTube or other URL: {dubbing.get('video_url')}")
-            # Download the video from YouTube
             vid = download_youtube_video(dubbing.get('video_url'))
             if not vid:
                 update_language_dubbing(dubbing_id, {
@@ -269,7 +256,6 @@ def process_dubbing_task(dubbing_id):
             'original_video_path': vid
         })
         
-        # Extract audio
         audio = extractAudioDubbed(vid, dubbing_id)
         if not audio:
             update_language_dubbing(dubbing_id, {
@@ -278,7 +264,6 @@ def process_dubbing_task(dubbing_id):
             })
             return
             
-        # Transcribe audio
         transcriptions = transcribeAudio(audio)
         if len(transcriptions) == 0:
             update_language_dubbing(dubbing_id, {
@@ -287,7 +272,6 @@ def process_dubbing_task(dubbing_id):
             })
             return
         
-        # Translate transcript to target language
         print(f"Translating transcript from {dubbing.get('source_language')} to {dubbing.get('target_language')}")
         translated_transcript = translate_transcript_with_timestamps(
             transcriptions, 
@@ -302,7 +286,6 @@ def process_dubbing_task(dubbing_id):
             })
             return
         
-        # Generate speech from translated transcript
         dubbed_audio_path = f"media/dubbed/audio_{dubbing_id}.wav"
         print(f"Generating speech from translated transcript using voice: {dubbing.get('voice')}")
         audio_result = transcript_to_speech(
@@ -318,7 +301,6 @@ def process_dubbing_task(dubbing_id):
             })
             return
         
-        # Merge speech with original video
         dubbed_video_path = f"media/dubbed/video_{dubbing_id}.mp4"
         print("Merging translated audio with original video")
         merge_success = merge_audio_with_video(
@@ -338,13 +320,11 @@ def process_dubbing_task(dubbing_id):
             'dubbed_video_path': dubbed_video_path
         })
         
-        # Add captions to the video if enabled
         final_path = dubbed_video_path
         if dubbing.get('add_captions', True):
             try:
                 captioned_path = f"media/captioned/dubbed_{dubbing_id}_captioned.mp4"
                 
-                # Extract text from translated transcript for captions
                 translated_text = []
                 for text, start, end in translated_transcript:
                     translated_text.append({
@@ -352,8 +332,7 @@ def process_dubbing_task(dubbing_id):
                         "end": end,
                         "text": text
                     })
-                
-                # Generate captions
+
                 add_captions(
                     dubbed_video_path,
                     captioned_path,
@@ -373,7 +352,6 @@ def process_dubbing_task(dubbing_id):
                     print_info=True
                 )
                 
-                # Use the captioned video if it was created successfully
                 if os.path.exists(captioned_path):
                     final_path = captioned_path
                     print("Successfully added captions to dubbed video")
@@ -384,14 +362,11 @@ def process_dubbing_task(dubbing_id):
         else:
             print("Captions disabled for this dubbing task, skipping caption generation")
         
-        # Upload to Cloudinary
         upload_result = upload_to_cloudinary(final_path, f"dubbed_{dubbing.get('username', 'anonymous')}_{dubbing.get('target_language')}")
         if upload_result:
-            # Add this URL
             add_cloudinary_url_to_language_dubbing(dubbing_id, upload_result['url'], upload_result['public_id'])
             print(f"Uploaded dubbed video to Cloudinary: {upload_result['url']}")
             
-            # Mark as completed
             update_language_dubbing(dubbing_id, {
                 'status': 'COMPLETED'
             })

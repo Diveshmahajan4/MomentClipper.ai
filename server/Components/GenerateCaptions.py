@@ -131,7 +131,7 @@ def add_captions(
     output_file = "with_transcript.mp4",
 
     font = "PoetsenOne-Regular.ttf",
-    font_size = 100,
+    font_size = 85,
     font_color = "white",
 
     stroke_width = 2,

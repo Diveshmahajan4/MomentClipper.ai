@@ -11,7 +11,6 @@ def transcribeAudio(audio_path):
         segments, info = model.transcribe(audio=audio_path, beam_size=5, language="en", max_new_tokens=128, condition_on_previous_text=False)
         print("Segments calculated")
         segments = list(segments)
-        print(segments)
         extracted_texts = [[segment.text, segment.start, segment.end] for segment in segments]
         return extracted_texts
     except Exception as e:
