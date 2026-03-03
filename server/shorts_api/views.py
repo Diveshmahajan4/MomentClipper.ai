@@ -69,8 +69,21 @@ class UserVideosView(APIView):
     API endpoint to get all videos for a specific user
     """
     
-    def get(self, request, username, format=None):
-        videos = VideoProcessing.objects.filter(username=username)
+    def post(self, request, format=None):
+        username = request.data.get('username')
+        user_id = request.data.get('userId')
+        
+        if not username and not user_id:
+            return Response(
+                {'error': 'Username or userId is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if user_id:
+            videos = VideoProcessing.objects.filter(user_id=user_id)
+        else:
+            videos = VideoProcessing.objects.filter(username=username)
+        
         serializer = VideoProcessingSerializer(videos, many=True)
         return Response(serializer.data)
 
@@ -137,8 +150,21 @@ class UserDubbingsView(APIView):
     API endpoint to get all language dubbing tasks for a specific user
     """
     
-    def get(self, request, username, format=None):
-        dubbings = LanguageDubbing.objects.filter(username=username)
+    def post(self, request, format=None):
+        username = request.data.get('username')
+        user_id = request.data.get('userId')
+        
+        if not username and not user_id:
+            return Response(
+                {'error': 'Username or userId is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if user_id:
+            dubbings = LanguageDubbing.objects.filter(user_id=user_id)
+        else:
+            dubbings = LanguageDubbing.objects.filter(username=username)
+        
         serializer = LanguageDubbingSerializer(dubbings, many=True)
         return Response(serializer.data)
 

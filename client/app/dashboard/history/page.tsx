@@ -114,7 +114,13 @@ export default function HistoryPage() {
   const fetchUserVideos = async (userEmail: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:8000/api/shorts/user/${encodeURIComponent(userEmail)}/`);
+      const response = await fetch(`http://localhost:8000/api/shorts/user/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: userEmail }),
+      });
       
       if (response.ok) {
         const videos = await response.json();

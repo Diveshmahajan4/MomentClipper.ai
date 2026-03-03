@@ -110,11 +110,13 @@ export default function TranslateHistoryPage() {
   const fetchUserDubbings = async (userEmail: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch(
-        `http://localhost:8000/api/dubbing/user/${encodeURIComponent(
-          userEmail
-        )}/`
-      );
+      const response = await fetch(`http://localhost:8000/api/dubbing/user/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: userEmail }),
+      });
 
       if (response.ok) {
         const dubbings = await response.json();
