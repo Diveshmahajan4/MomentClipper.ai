@@ -1,14 +1,57 @@
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { createClient } from "@/utils/supabase/client"
+import { LoginForm } from "@/components/login-form"
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 export default function Hero() {
-  const router = useRouter();
+  const router = useRouter()
+  const supabase = createClient()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
 
-  const handelGetStarted =  () => {
-    router.push("/dashboard")
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setIsLoggedIn(!!user)
+      setIsLoading(false)
+    }
+    checkAuth()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user)
+      if (session?.user) setShowLoginDialog(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleGetStarted = () => {
+    if (isLoggedIn) {
+      router.push("/dashboard")
+    } else {
+      setShowLoginDialog(true)
+    }
   }
+
+  const handleLearnMore = () => {
+    if (isLoggedIn) {
+      router.push("/dashboard")
+    } else {
+      setShowLoginDialog(true)
+    }
+  }
+
   return (
+    <>
     <div className="min-h-[80vh] bg-background py-20 md:py-32 overflow-hidden relative">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
@@ -50,12 +93,24 @@ export default function Hero() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.8 }}
           >
-            <Button size="lg" className="w-full sm:w-auto" onClick={()  => handelGetStarted()}>
-              Get started
-            </Button>
-            <Button variant="outline" size="lg" className="w-full sm:w-auto">
-              Learn more
-            </Button>
+            {isLoading ? (
+              <Button size="lg" className="w-full sm:w-auto" disabled>
+                Loading...
+              </Button>
+            ) : isLoggedIn ? (
+              <Button size="lg" className="w-full sm:w-auto" onClick={() => router.push("/dashboard")}>
+                Go to Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button size="lg" className="w-full sm:w-auto" onClick={handleGetStarted}>
+                  Get started
+                </Button>
+                <Button variant="outline" size="lg" className="w-full sm:w-auto" onClick={handleLearnMore}>
+                  Learn more
+                </Button>
+              </>
+            )}
           </motion.div>
         </motion.div>
       </div>
@@ -112,6 +167,16 @@ export default function Hero() {
         />
       </div>
     </div>
+
+    <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+      <DialogContent className="sm:max-w-md p-0 border-none bg-transparent shadow-none">
+        <VisuallyHidden>
+          <DialogTitle>Login</DialogTitle>
+        </VisuallyHidden>
+        <LoginForm />
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }
 
