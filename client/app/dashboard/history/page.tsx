@@ -332,7 +332,7 @@ export default function HistoryPage() {
                                 <span className="font-medium">
                                   {getVideoTitle(selectedVideo.youtube_url)}
                                 </span>
-                                <a href={selectedVideo.youtube_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 flex items-center text-sm">
+                                <a href={selectedVideo.youtube_url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground flex items-center text-sm">
                                   Original Video <ExternalLink className="ml-1 h-3 w-3" />
                                 </a>
                               </div>
@@ -365,7 +365,7 @@ export default function HistoryPage() {
                                           href={clip.url} 
                                           target="_blank" 
                                           rel="noopener noreferrer" 
-                                          className="text-blue-500 text-sm"
+                                          className="text-sm"
                                         >
                                         <Button variant="outline">
                                           View
@@ -373,13 +373,13 @@ export default function HistoryPage() {
                                         </a>
                                         <Link
                                           href={`/dashboard/edit?id=${selectedVideo.id}&clip=${index}`}
-                                          className="text-blue-500 text-sm ml-2"
+                                          className="text-sm ml-2"
                                         >
                                           <Button variant="outline">
                                           Edit
                                         </Button>
                                         </Link>
-                                        <Button variant="outline" className="text-blue-500 text-sm" onClick={() => handleTranslate(clip.url)}>
+                                        <Button variant="outline" className="text-sm" onClick={() => handleTranslate(clip.url)}>
                                           Translate
                                         </Button>
                                       </div>
@@ -457,7 +457,7 @@ export default function HistoryPage() {
                                         href={video.youtube_url} 
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-xs text-blue-500 hover:underline"
+                                        className="text-xs text-muted-foreground hover:text-foreground hover:underline"
                                       >
                                         Source Link
                                       </a>

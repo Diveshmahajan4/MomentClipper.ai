@@ -44,7 +44,6 @@ interface ApiResponse {
   processing: ProcessingData
 }
 
-// Client component that handles URL parameters
 function DashboardContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null)
@@ -81,11 +80,9 @@ function DashboardContent() {
           const userEmail = user.email || "Unknown User";
           setUsername(userEmail);
           
-          // If we have an ID from URL, fetch that specific processing
           if (idFromUrl) {
             await fetchProcessingById(idFromUrl);
           } else {
-            // Otherwise fetch all user videos
             await fetchUserVideos(userEmail);
           }
         } else {
@@ -100,7 +97,6 @@ function DashboardContent() {
     fetchUser();
   }, [idFromUrl]);
 
-  // Function to fetch a specific processing by ID
   const fetchProcessingById = async (id: string) => {
     try {
       setIsLoadingHistory(true);
@@ -116,7 +112,6 @@ function DashboardContent() {
           });
         }
         
-        // Also fetch all videos to keep the list updated
         if (username) {
           await fetchUserVideos(username);
         }
@@ -135,7 +130,6 @@ function DashboardContent() {
     }
   };
   
-  // Function to fetch user's videos
   const fetchUserVideos = async (userEmail: string) => {
     try {
       setIsLoadingHistory(true);
@@ -151,18 +145,14 @@ function DashboardContent() {
         const videos = await response.json();
         setUserVideos(videos);
         
-        // If there are completed videos, set the latest one as the current video
-        // (only if we're not already loading a specific video by ID)
         if (!idFromUrl) {
           const completedVideos = videos.filter((video: ProcessingData) => video.status === 'COMPLETED');
           
           if (completedVideos.length > 0) {
-            // Sort by updated_at to get the most recent one
             const latestVideo = completedVideos.sort((a: ProcessingData, b: ProcessingData) => 
               new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
             )[0];
             
-            // Set the latest video as the current video
             setApiResponse({
               message: "Retrieved previous video",
               processing: latestVideo
@@ -179,7 +169,6 @@ function DashboardContent() {
     }
   };
 
-  // Poll for status updates if we have a processing ID and status is not completed
   useEffect(() => {
     if (!processingId || processingStatus === 'COMPLETED' || processingStatus === 'FAILED') {
       return;
@@ -192,7 +181,6 @@ function DashboardContent() {
         
         setProcessingStatus(data.status);
         
-        // Update the API response with the latest data
         if (data.status === 'COMPLETED') {
           setApiResponse(prev => {
             if (!prev) return null;
@@ -202,7 +190,6 @@ function DashboardContent() {
             };
           });
           
-          // Update our list of user videos to include this new one
           setUserVideos(prevVideos => {
             const exists = prevVideos.some(video => video.id === data.id);
             if (exists) {
@@ -287,7 +274,6 @@ function DashboardContent() {
     }
   }
 
-  // Transform the backend API response format to the format expected by ReelsResults
   const transformedApiResponse = apiResponse && apiResponse.processing.status === 'COMPLETED' ? {
     message: apiResponse.message,
     video_path: apiResponse.processing.youtube_url,
@@ -357,7 +343,6 @@ function DashboardContent() {
   )
 }
 
-// Main page component with Suspense boundary
 export default function Page() {
   return (
     <Suspense fallback={

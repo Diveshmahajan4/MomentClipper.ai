@@ -93,7 +93,7 @@ export function AppSidebar({
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <div className="flex items-center gap-3">
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Command className="size-4" />
           </div>
           <div className="grid text-left text-sm leading-tight">

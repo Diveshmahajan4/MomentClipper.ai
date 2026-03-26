@@ -161,7 +161,7 @@ export function TranslationResults({ dubbing, isLoading, onRetry }: TranslationR
                 href={dubbing.video_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:underline text-blue-500 block max-w-full truncate"
+                className="hover:underline text-muted-foreground hover:text-foreground block max-w-full truncate"
               >
                 {dubbing.video_url}
               </a>
