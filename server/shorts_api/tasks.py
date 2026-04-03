@@ -9,7 +9,7 @@ from Components.YoutubeDownloader import download_youtube_video
 from Components.Edit import extractAudio, crop_video, extractAudioDubbed
 from Components.Transcription import transcribeAudio, transcribeAudioWithWordTimestamps
 from Components.LanguageTasks import GetHighlight, GetMultipleHighlights
-from Components.FaceCrop import crop_to_vertical, combine_videos
+from Components.FaceCrop import crop_to_vertical, combine_videos, letterbox_to_portrait
 from Components.GenerateCaptions import add_captions
 from Components.Translation import translate_transcript_with_timestamps
 from Components.TextToSpeech import transcript_to_speech, merge_audio_with_video
@@ -228,11 +228,14 @@ def process_video_task(video_processing_id):
                 output = f"media/Out_{video_processing_id}_{i}.mp4"
                 crop_video(vid, output, start, stop)
 
-                cropped = f"media/cropped_{video_processing_id}_{i}.mp4"
-                crop_to_vertical(output, cropped)
-
                 final_path = f"media/final_{video_processing_id}_{i}.mp4"
-                combine_videos(output, cropped, final_path)
+
+                if video_processing.crop_to_portrait:
+                    cropped = f"media/cropped_{video_processing_id}_{i}.mp4"
+                    crop_to_vertical(output, cropped)
+                    combine_videos(output, cropped, final_path)
+                else:
+                    letterbox_to_portrait(output, final_path)
 
                 if video_processing.add_captions:
                     try:
