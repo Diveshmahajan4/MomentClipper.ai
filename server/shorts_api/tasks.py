@@ -130,8 +130,8 @@ def process_video_task(video_processing_id):
                     add_captions(
                         final_path,
                         captioned_path,
-                        font="PoetsenOne-Regular.ttf",
-                        font_size=30,
+                        font="PlayfairDisplay-VariableFont_wght.ttf",
+                        font_size=100,
                         font_color="white",
                         stroke_width=2,
                         stroke_color="black",
@@ -252,8 +252,8 @@ def process_video_task(video_processing_id):
                         add_captions(
                             final_path,
                             captioned_path,
-                            font="PoetsenOne-Regular.ttf",
-                            font_size=30,
+                            font="PlayfairDisplay-VariableFont_wght.ttf",
+                            font_size=110,
                             font_color="white",
                             stroke_width=2,
                             stroke_color="black",
@@ -474,8 +474,8 @@ def process_dubbing_task(dubbing_id):
                 add_captions(
                     dubbed_video_path,
                     captioned_path,
-                    font="PoetsenOne-Regular.ttf",
-                    font_size=30,
+                    font="PlayfairDisplay-VariableFont_wght.ttf",
+                    font_size=110,
                     font_color="white",
                     stroke_width=2,
                     stroke_color="black",
